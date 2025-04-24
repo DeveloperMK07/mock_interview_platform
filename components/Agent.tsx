@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { vapi } from "@/lib/vapi.sdk"
+import { interviewer } from '@/constants';
+import { createFeedback } from '@/lib/actions/general.action';
 
 enum CallStatus {
     INACTIVE = "INACTIVE",
@@ -17,7 +19,7 @@ interface SavedMessage {
     content: string;
 }
 
-const Agent = ({userName , userId , type} : AgentProps) => {
+const Agent = ({userName , userId , type , interviewId , questions} : AgentProps) => {
     const router= useRouter();
 
     const [isSpeaking, setIsSpeaking] = useState(false);
@@ -25,6 +27,8 @@ const Agent = ({userName , userId , type} : AgentProps) => {
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     
     const [messages, setMessages] = useState<SavedMessage[]>([]);
+
+    const [latestMessage, setLastMessage] = useState<string>("");
 
     useEffect(() => {
         const onCallStart = () => {
@@ -85,7 +89,7 @@ const Agent = ({userName , userId , type} : AgentProps) => {
             interviewId: interviewId!,
             userId: userId!,
             transcript: messages,
-            feedbackId,
+            
           });
     
           if (success && id) {
@@ -103,7 +107,7 @@ const Agent = ({userName , userId , type} : AgentProps) => {
             handleGenerateFeedback(messages);
           }
         }
-      }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
+      }, [messages, callStatus, interviewId, router, type, userId]);
     
       const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
@@ -136,7 +140,7 @@ const Agent = ({userName , userId , type} : AgentProps) => {
         vapi.stop();
       };
 
-      const latestMessage=messages[messages.length - 1]?.content;
+      // const latestMessage=messages[messages.length - 1]?.content;
 
       const isCallInactiveOrFinished= callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED;
 
